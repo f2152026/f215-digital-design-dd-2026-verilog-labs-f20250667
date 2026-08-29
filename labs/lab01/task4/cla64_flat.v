@@ -61,11 +61,33 @@ module cla64_flat(
   //
   // TODO: paste your verified assign statements for c[1] through c[64] here.
 
+  assign #(2) c[1]  = g[0] | (p[0] & cin);
+  assign #(2) c[2]  = g[1] | (p[1] & g[0]) | (p[1] & p[0] & cin);
+  assign #(2) c[3]  = g[2] | (p[2] & g[1]) | (p[2] & p[1] & g[0]) | (p[2] & p[1] & p[0] & cin);
+  assign #(2) c[4]  = g[3] | (p[3] & g[2]) | (p[3] & p[2] & g[1]) | (p[3] & p[2] & p[1] & g[0]) | (p[3] & p[2] & p[1] & p[0] & cin);
+   // High fan-in carry generation using reduction and indexing
+  // In real hardware synthesis, flat CLA scales up to massive AND/OR fan-in
+  genvar k, j;
+  generate
+    for (k = 5; k <= 64; k = k + 1) begin : gen_carries
+      wire [k:0] terms;
+      assign terms[0] = g[k-1];
+      for (j = 1; j < k; j = j + 1) begin : gen_terms
+        assign terms[j] = (&p[k-1:k-j]) & g[k-j-1];
+      end
+      assign terms[k] = (&p[k-1:0]) & cin;
+      assign #(2) c[k] = |terms;
+    end
+  endgenerate
   assign cout = c[64];
+
+
 
   // ---------------------------------------------------------------------
   // Step 3: sum bits
   // ---------------------------------------------------------------------
   // TODO: assign #(2) sum = p ^ {c[63:1], cin};
+
+  assign #(2) sum = p ^ {c[63:1], cin};
 
 endmodule
