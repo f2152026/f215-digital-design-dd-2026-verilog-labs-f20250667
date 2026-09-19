@@ -8,6 +8,7 @@
 // Write your testbench first, let it tell you something is wrong, THEN
 // come back and fix this file.
 
+
 module comp2 (
   input  [1:0] A,
   input  [1:0] B,
